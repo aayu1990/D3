@@ -27,17 +27,15 @@ var chartGroup = svg.append("g")
   // // Import Data
   d3.csv("data.csv")
     .then(function(data) {
-    // Step 1: Parse Data/Cast as numbers
-    // ==============================
+    
     data.forEach(function(data) {
       data.poverty = +data.poverty;
       data.healthcare = +data.healthcare;
     });
 
-    // Step 2: Create scale functions
-    // ==============================
+    //Create scale functions
     var x = d3.scaleLinear()
-      .domain([8, d3.max(data, d => d.poverty)])
+      .domain([10, d3.max(data, d => d.poverty)])
       .range([0, svgWidth]);
 
     var y = d3.scaleLinear()
@@ -62,8 +60,6 @@ var main = chartGroup
 // draw the x axis
 var xAxis = d3.axisBottom(x);
 
-// .tickSize(-chartHeight)
-// .tickFormat(d3.format("s"));
 
 main.append('g')
 .attr('transform', 'translate(0,' + chartHeight + ')')
@@ -81,7 +77,7 @@ main.append('g')
 .call(yAxis);
 
 
-chartGroup.selectAll("circle")
+var circlesGroup=chartGroup.selectAll("circle")
     .data(data) 
     .enter()
     .append("circle")  // create a new circle for each value
@@ -89,9 +85,47 @@ chartGroup.selectAll("circle")
     .attr("cx", function (d) { return x(d.poverty); } ) // translate x value
     .attr("r", 10) // radius of circle
     .attr("fill", "lightblue")
-    .attr("")
-    .style("opacity", 0.6); // opacity of circle
-  });
+    .attr("outline","black")
+    .attr("opacity", 0.6); // opacity of circle
 
+    var label = "In Poverty(%)";
+    
+    // Initialize tool tip
+    var toolTip = d3.tip()
+    .attr("class", "tooltip")
+    .offset([-5,5])
+      .html(function(d) {
+      return (`${d.state}<br>${label}<br>${d.poverty}`);
+    });
+
+  chartGroup.call(toolTip);
+
+  circlesGroup.on("mouseover", function(data) {
+    toolTip.show(data,this);
+  })
+  .on("mouseout", function(data,index) {
+      toolTip.hide(data,this);
+    });
+
+  
+   
+ //Create axes labels
+    chartGroup.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left + 20)
+      .attr("x", 0 - (chartHeight-40))
+      .attr("dy", "1em")
+      .attr("class", "axisText")
+      .text("Lacks Healthcare(%)");
+
+    chartGroup.append("text")
+      .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + margin.top + 30})`)
+      .attr("y", 0 - margin.top-10)
+      .attr("x", 0 - (chartWidth-800))
+      .attr("dy", "1em")
+      .attr("class", "axisText")
+      .attr("class", "axisText")
+      .text("In Poverty(%)");
+  });
 
  
